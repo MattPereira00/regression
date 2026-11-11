@@ -1,5 +1,5 @@
 d1: drift, l=1*m;
-f1: field, type="{{ FIELD_TYPE }}", magneticFile="{{ FIELD_FORMAT }}:{{ FIELD_FILE }}", magneticInterpolator = "{{ FIELD_INTERPOLATOR }}", bScaling={{ B_SCALING | default(1) }};
+f1: field, type="{{ FIELD_TYPE }}", magneticFile="{{ FIELD_FORMAT }}:{{ FIELD_FILE }}", magneticInterpolator = "{{ FIELD_INTERPOLATOR }}", bScaling={{ B_SCALING | default(1) }}{% if MAX_STEP %}, maximumStepLength={{ MAX_STEP }}*cm{% endif %};
 d_field: drift, l={{ FIELD_LENGTH }}*m, fieldAll="f1";
 d2: drift, l=1*m;
 

@@ -16,12 +16,13 @@ FIELD_TRACK_CASES = [
      0.014271013981376675, 0.007416345178360901, 0.5799057118058205,
      0.004409168245179408, 0.002207146467824476, 0.226743698656559),
     ("4d", "bmap4d", "bdsim4d", "4dexample.dat", "1.0",
-     0.0017425666768000239, 0.0004933940518041164, -0.023480301636829973,
-     0.0017356338363185458, 0.00040226890108261966, -0.01186977472603321),
+     0.0017499456565023273, 0.0005163381596259943, -0.024854568827524782,
+     0.0017271221410862713, 0.0004066147497225078, -0.012548425126634538),
 ]
 
-# 4D map spans t = -2 to 1.5 ns and z = -35 to 29 cm: keep the beam inside both
-PARAMS_4D = {'B_SCALING': '0.01', 'T0': '-4.4', 'FIELD_LENGTH': '0.5'}
+# 4D map spans t = -2 to 1.5 ns and z = -35 to 29 cm: keep the beam inside both,
+# with a small maximum step so the result does not depend on the Geant4 version
+PARAMS_4D = {'B_SCALING': '0.01', 'T0': '-4.4', 'FIELD_LENGTH': '0.5', 'MAX_STEP': '0.25'}
 
 
 @pytest.mark.parametrize(

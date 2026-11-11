@@ -40,21 +40,25 @@ FIELD_INTERPOLATION_CASES = [
      0.014271013981376675, 0.007416345178360901, 0.5799057118058205,
      0.004409168245179408, 0.002207146467824476, 0.226743698656559),
     ("4d_linear",    "bmap4d", "bdsim4d", "4dexample.dat", "1.0", "linear",
-     0.0017475880356421572, 0.0005089203595330538, -0.024269675916805865,
-     0.0017318194256812735, 0.00040562930829913266, -0.01225728942649439),
+     0.0017470572654710952, 0.0005099889726282857, -0.0243233716648072,
+     0.0017243080769067224, 0.00040422254644303105, -0.01227595617128536),
     ("4d_linearmag", "bmap4d", "bdsim4d", "4dexample.dat", "1.0", "linearmag",
-     0.0017460015341554127, 0.0005046772127517669, -0.023987710651010276,
-     0.0017479571484478318, 0.0004090177902888067, -0.012136265947949141),
+     0.0017474172300197496, 0.0005109210746173078, -0.02438345778360963,
+     0.001738130517491375, 0.0004082201986125555, -0.012322448405716568),
     ("4d_nearest",   "bmap4d", "bdsim4d", "4dexample.dat", "1.0", "nearest",
-     0.0017881447946763089, 0.0005844079990617795, -0.02393616565465927,
-     0.0019518757480470577, 0.000533674014530518, -0.012935671377554536),
+     0.0017595644708096358, 0.0005266989756302343, -0.024804426898434758,
+     0.0019314756950125776, 0.0005176813500108591, -0.013160282177664339),
     ("4d_cubic",     "bmap4d", "bdsim4d", "4dexample.dat", "1.0", "cubic",
-     0.0017425666768000239, 0.0004933940518041164, -0.023480301636829973,
-     0.0017356338363185458, 0.00040226890108261966, -0.01186977472603321),
+     0.0017499456565023273, 0.0005163381596259943, -0.024854568827524782,
+     0.0017271221410862713, 0.0004066147497225078, -0.012548425126634538),
 ]
 
-# 4D map spans t = -2 to 1.5 ns and z = -35 to 29 cm: keep the beam inside both
-PARAMS_4D = {'B_SCALING': '0.01', 'T0': '-4.4', 'FIELD_LENGTH': '0.5'}
+# 4D map spans t = -2 to 1.5 ns and z = -35 to 29 cm: keep the beam inside both,
+# with a small maximum step so the result does not depend on the Geant4 version
+PARAMS_4D = {'B_SCALING': '0.01', 'T0': '-4.4', 'FIELD_LENGTH': '0.5', 'MAX_STEP': '0.25'}
+
+# nearest gives a piecewise-constant field, so the result still varies with the integration steps
+REL_TOL = {"4d_nearest": 1e-2}
 
 
 @pytest.mark.parametrize(
@@ -102,12 +106,14 @@ def test(geant4_version, bdsim_version,
     sampler_Sigma_yp = sampler_data['yp'].std()
     sampler_mean_y   = sampler_data['y'].mean()
 
-    assert pytest.approx(sampler_Sigma_x, rel=1e-3)  == expected_Sigma_x
-    assert pytest.approx(sampler_Sigma_xp, rel=1e-3) == expected_Sigma_xp
-    assert pytest.approx(sampler_mean_x, rel=1e-3)   == expected_mean_x
-    assert pytest.approx(sampler_Sigma_y, rel=1e-3)  == expected_Sigma_y
-    assert pytest.approx(sampler_Sigma_yp, rel=1e-3) == expected_Sigma_yp
-    assert pytest.approx(sampler_mean_y, rel=1e-3)   == expected_mean_y
+    rel_tol = REL_TOL.get(case, 1e-3)
+
+    assert pytest.approx(sampler_Sigma_x, rel=rel_tol)  == expected_Sigma_x
+    assert pytest.approx(sampler_Sigma_xp, rel=rel_tol) == expected_Sigma_xp
+    assert pytest.approx(sampler_mean_x, rel=rel_tol)   == expected_mean_x
+    assert pytest.approx(sampler_Sigma_y, rel=rel_tol)  == expected_Sigma_y
+    assert pytest.approx(sampler_Sigma_yp, rel=rel_tol) == expected_Sigma_yp
+    assert pytest.approx(sampler_mean_y, rel=rel_tol)   == expected_mean_y
 
     te = testdata_store.new_test_entry("14_field/field_interpolation_" + case, __file__, nprimary, 0)
     te.add_input_parameter_dict(params)
