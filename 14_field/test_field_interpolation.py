@@ -40,36 +40,21 @@ FIELD_INTERPOLATION_CASES = [
      0.014271013981376675, 0.007416345178360901, 0.5799057118058205,
      0.004409168245179408, 0.002207146467824476, 0.226743698656559),
     ("4d_linear",    "bmap4d", "bdsim4d", "4dexample.dat", "1.0", "linear",
-     0.0017761945113131978, 0.00035136689967708905, 1.3215959309269466e-05,
-     0.0017857934386989697, 0.0003543900315124393, -2.1371774069270798e-05),
+     0.001808543139143065, 0.00040887274597167404, -0.01683874018341303,
+     0.0017993057811768252, 0.00037012454901063643, -0.00846136406394653),
     ("4d_linearmag", "bmap4d", "bdsim4d", "4dexample.dat", "1.0", "linearmag",
-     0.0017761945113131978, 0.00035136689967708905, 1.3215959309269466e-05,
-     0.0017857934386989697, 0.0003543900315124393, -2.1371774069270798e-05),
+     0.0018086242082868422, 0.0004090854732618443, -0.016882787661999465,
+     0.0017999354246960645, 0.00037023441557180775, -0.008484208849840797),
     ("4d_nearest",   "bmap4d", "bdsim4d", "4dexample.dat", "1.0", "nearest",
-     0.0017761945113131978, 0.00035136689967708905, 1.3215959309269466e-05,
-     0.0017857934386989697, 0.0003543900315124393, -2.1371774069270798e-05),
-    # values below are valid for Geant4 >= 11.2.0 - see G4_PRE_11_2_OVERRIDES
+     0.001840131059468146, 0.0004545603853493643, -0.0174147735895589,
+     0.0018908097723181676, 0.0004080213898613437, -0.008924063503579237),
     ("4d_cubic",     "bmap4d", "bdsim4d", "4dexample.dat", "1.0", "cubic",
-     0.0017761945113131978, 0.00035136689967708905, 1.3215959309269466e-05,
-     0.0017857934386989697, 0.0003543900315124393, -2.1371774069270798e-05),
+     0.0018112471519557939, 0.0004130764868456207, -0.017535226702690126,
+     0.0018008572531887273, 0.0003714187378806874, -0.008810622115852311),
 ]
 
-# Geant4 v11.2.0 changed G4PropagatorInField step-size handling (new
-# fMaxStepSizeMultiplier/fMinBigDistance parameters - see G4 v11.2.0 release
-# notes), which shifts exactly where BDSIM's cubic 4D field interpolator
-# samples the field map. Confirmed identical on Geant4 10.7.4/11.0.4/11.1.3;
-# confirmed matching FIELD_INTERPOLATION_CASES' 4d_cubic values on 11.2+
-# (and identical to test_field_tracking.py's "4d" case, since cubic is
-# BDSIM's default 4D interpolator).
-G4_PRE_11_2_OVERRIDES = {
-    "4d_cubic": (0.0016556805394320657, 0.0002906922050868294, 0.00022163846734898129,
-                 0.0018062131083373385, 0.00038040219503206527, 8.285922579478395e-05),
-}
-
-
-def _g4_pre_11_2(geant4_version):
-    major, minor = (int(x) for x in geant4_version.split(".")[:2])
-    return (major, minor) < (11, 2)
+# 4D maps span t = -2 to 1.5 ns: start the beam early and scale the field down
+PARAMS_4D = {'B_SCALING': '0.002', 'T0': '-5'}
 
 
 @pytest.mark.parametrize(
@@ -99,6 +84,8 @@ def test(geant4_version, bdsim_version,
         'BEAM_ENERGY': beam_energy,
         'FIELD_INTERPOLATOR': interpolator,
     }
+    if field_type == "bmap4d":
+        params.update(PARAMS_4D)
 
     nprimary = testlength_primaries.get_nprimary(__file__, test_length)
 
@@ -114,10 +101,6 @@ def test(geant4_version, bdsim_version,
     sampler_Sigma_y  = sampler_data['y'].std()
     sampler_Sigma_yp = sampler_data['yp'].std()
     sampler_mean_y   = sampler_data['y'].mean()
-
-    if case in G4_PRE_11_2_OVERRIDES and _g4_pre_11_2(geant4_version):
-        (expected_Sigma_x, expected_Sigma_xp, expected_mean_x,
-         expected_Sigma_y, expected_Sigma_yp, expected_mean_y) = G4_PRE_11_2_OVERRIDES[case]
 
     assert pytest.approx(sampler_Sigma_x, rel=1e-3)  == expected_Sigma_x
     assert pytest.approx(sampler_Sigma_xp, rel=1e-3) == expected_Sigma_xp
