@@ -21,8 +21,16 @@ FIELD_TRACK_CASES = [
 ]
 
 # 4D map spans t = -2 to 1.5 ns and z = -35 to 29 cm: keep the beam inside both,
-# with a small maximum step so the result does not depend on the Geant4 version
+# with a small maximum step so the integration is converged
 PARAMS_4D = {'B_SCALING': '0.01', 'T0': '-4.4', 'FIELD_LENGTH': '0.5', 'MAX_STEP': '0.25'}
+
+# expected values on Geant4 < 11.2, where the 4D results differ
+G4_PRE_11_2_OVERRIDES = {}
+
+
+def _g4_pre_11_2(geant4_version: str) -> bool:
+    major, minor = (int(x) for x in geant4_version.split(".")[:2])
+    return (major, minor) < (11, 2)
 
 
 @pytest.mark.parametrize(
@@ -68,6 +76,16 @@ def test(geant4_version, bdsim_version,
     sampler_Sigma_y  = sampler_data['y'].std()
     sampler_Sigma_yp = sampler_data['yp'].std()
     sampler_mean_y   = sampler_data['y'].mean()
+
+    # TEMPORARY: print all stats so a failing assert does not hide them
+    print(f"[{case}] geant4_version={geant4_version!r} "
+          f"Sigma_x={sampler_Sigma_x!r} Sigma_xp={sampler_Sigma_xp!r} "
+          f"mean_x={sampler_mean_x!r} Sigma_y={sampler_Sigma_y!r} "
+          f"Sigma_yp={sampler_Sigma_yp!r} mean_y={sampler_mean_y!r}")
+
+    if case in G4_PRE_11_2_OVERRIDES and _g4_pre_11_2(geant4_version):
+        (expected_Sigma_x, expected_Sigma_xp, expected_mean_x,
+         expected_Sigma_y, expected_Sigma_yp, expected_mean_y) = G4_PRE_11_2_OVERRIDES[case]
 
     assert pytest.approx(sampler_Sigma_x, rel=1e-3)  == expected_Sigma_x
     assert pytest.approx(sampler_Sigma_xp, rel=1e-3) == expected_Sigma_xp
