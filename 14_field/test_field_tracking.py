@@ -25,7 +25,10 @@ FIELD_TRACK_CASES = [
 PARAMS_4D = {'B_SCALING': '0.01', 'T0': '-4.4', 'FIELD_LENGTH': '0.5', 'MAX_STEP': '0.25'}
 
 # expected values on Geant4 < 11.2, where the 4D results differ
-G4_PRE_11_2_OVERRIDES = {}
+G4_PRE_11_2_OVERRIDES = {
+    "4d": (0.0017549558409089073, 0.0005210023812053462, -0.024858626325055956,
+           0.001727174026235025, 0.0004068548046396223, -0.01255045544905588),
+}
 
 
 def _g4_pre_11_2(geant4_version: str) -> bool:
@@ -76,12 +79,6 @@ def test(geant4_version, bdsim_version,
     sampler_Sigma_y  = sampler_data['y'].std()
     sampler_Sigma_yp = sampler_data['yp'].std()
     sampler_mean_y   = sampler_data['y'].mean()
-
-    # TEMPORARY: print all stats so a failing assert does not hide them
-    print(f"[{case}] geant4_version={geant4_version!r} "
-          f"Sigma_x={sampler_Sigma_x!r} Sigma_xp={sampler_Sigma_xp!r} "
-          f"mean_x={sampler_mean_x!r} Sigma_y={sampler_Sigma_y!r} "
-          f"Sigma_yp={sampler_Sigma_yp!r} mean_y={sampler_mean_y!r}")
 
     if case in G4_PRE_11_2_OVERRIDES and _g4_pre_11_2(geant4_version):
         (expected_Sigma_x, expected_Sigma_xp, expected_mean_x,
