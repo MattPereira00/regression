@@ -1,4 +1,4 @@
-f1: field, type="bmap1d", magneticFile="bdsim1d:{{ FIELD_FILE }}", magneticInterpolator="{{ INTERPOLATOR }}"{% if REFLECTION %}, magneticReflection="{{ REFLECTION }}"{% endif %};
+f1: field, type="bmap{{ DIM }}d", magneticFile="bdsim{{ DIM }}d:{{ FIELD_FILE }}", magneticInterpolator="{{ INTERPOLATOR }}"{% if REFLECTION %}, magneticReflection="{{ REFLECTION }}"{% endif %};
 
 box: rcol, fieldAll="f1", l={{ BOX_LENGTH }}*cm, material="air", horizontalWidth={{ BOX_WIDTH }}*cm;
 l1: line=(box);
@@ -15,7 +15,8 @@ beam, particle="e-",
 option, ngenerate=1;
 option, outputFormat="none";
 
-q1: query, n{{ AXIS }}={{ NQ }}, {{ AXIS }}min={{ QMIN }}*cm, {{ AXIS }}max={{ QMAX }}*cm,
+{# lengths are in cm, but the query time is a plain number in ns #}
+q1: query{% for a in QUERY %}{% set unit = '' if a.name == 't' else '*cm' %}, n{{ a.name }}={{ a.n }}, {{ a.name }}min={{ a.lo }}{{ unit }}{% if a.n > 1 %}, {{ a.name }}max={{ a.hi }}{{ unit }}{% endif %}{% endfor %},
     outfileMagnetic="{{ OUTFILE }}",
     queryMagneticField=1,
     fieldObject="f1",
