@@ -83,6 +83,7 @@ class test_nprimary :
                          "14_field/test_field_offset":{"short":5000,"medium":5000,"long":5000},
                          "14_field/test_field_interpolation":{"short":5000,"medium":5000,"long":5000},
                          "14_field/test_field_em_tracking":{"short":5000,"medium":5000,"long":5000},
+                         "14_field/test_field_reflection":{"short":1,"medium":1,"long":1},
                          "16_eloss/test_eloss_collimator":{"short":1000,"medium":10000,"long":10000},
                          "16_eloss/test_eloss_collimator_storeElossLinks": {"short": 1000, "medium": 10000, "long": 10000},
                          "20_scorer/test_scorer3d": {"short": 5000, "medium": 10000, "long": 50000},
